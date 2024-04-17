@@ -24,7 +24,7 @@ args = parser.parse_args()
 
 # Switch control flow based on arguments
 if args.mode == "record":
-    record(args)
+    record(args.folder)
 
 if args.mode == "crop":
     crop(args)
