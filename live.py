@@ -2,7 +2,7 @@ import cv2 as cv
 import torch
 import os
 from network import Net
-from cascade import create_cascade
+#from cascade import create_cascade
 from transforms import ValidationTransform
 from PIL import Image
 
