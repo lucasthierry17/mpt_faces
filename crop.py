@@ -23,13 +23,6 @@ import random
     #
     #   to decide how to split them.
     
-import cv2 as cv
-import os
-import csv
-import random
-
-from common import TRAIN_FOLDER, VAL_FOLDER, ROOT_FOLDER
-
 # Funktion zum Entfernen aller Dateien in einem Ordner
 def clean_folder(folder):
     for root, dirs, files in os.walk(folder):
@@ -56,6 +49,12 @@ def crop(args):
 
             # Liste der Bilddateien im aktuellen Ordner erhalten
             image_files = [file for file in os.listdir(person_folder) if file.endswith('.png')]
+
+            # Erstellen von Unterordnern für die Person in den Trainings- und Validierungsordnern
+            person_train_folder = os.path.join(TRAIN_FOLDER, folder_name)
+            person_val_folder = os.path.join(VAL_FOLDER, folder_name)
+            os.makedirs(person_train_folder, exist_ok=True)
+            os.makedirs(person_val_folder, exist_ok=True)
 
             for image_file in image_files:
                 # Dateipfad zum aktuellen Bild
@@ -87,12 +86,12 @@ def crop(args):
 
                         # Entscheiden, ob das Bild dem Trainings- oder Validierungsordner zugewiesen wird
                         if random.uniform(0.0, 1.0) < args.split:
-                            save_folder = VAL_FOLDER
+                            save_folder = person_val_folder
                         else:
-                            save_folder = TRAIN_FOLDER
+                            save_folder = person_train_folder
 
                         # Bild speichern
-                        cv.imwrite(os.path.join(save_folder, f"{folder_name}_{image_file}"), face_with_border)
+                        cv.imwrite(os.path.join(save_folder, image_file), face_with_border)
 
                         print(f"Face cropped from {image_file} and saved to {save_folder}")
                     
@@ -104,4 +103,3 @@ def crop(args):
     if args.border < 0 or args.border > 1:
         print("Border must be between 0 and 1")
         exit()
-

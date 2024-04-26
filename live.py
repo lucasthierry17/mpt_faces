@@ -9,19 +9,41 @@ from PIL import Image
 # NOTE: This will be the live execution of your pipeline
 
 def live(args):
-    # TODO: 
-    #   Load the model checkpoint from a previous training session (check code in train.py)
-    #   Initialize the face recognition cascade again (reuse code if possible)
-    #   Also, create a video capture device to retrieve live footage from the webcam.
-    #   Attach border to the whole video frame for later cropping.
-    #   Run the cascade on each image, crop all faces with border.
-    #   Run each cropped face through the network to get a class prediction.
-    #   Retrieve the predicted persons name from the checkpoint and display it in the image
-    if args.border is None:
-        print("Live mode requires a border value to be set")
+    # Load the model checkpoint from a previous training session
+    checkpoint = torch.load("model.pt")
+    classes = checkpoint["classes"]
+    model = Net(len(classes))
+    model.load_state_dict(checkpoint["model"])
+    model.eval()
+
+    # Create a video capture device to retrieve live footage from the webcam
+    cap = cv.VideoCapture(0)
+
+    if not cap.isOpened():
+        print("Error: Couldn't open camera")
         exit()
 
-    args.border = float(args.border)
-    if args.border < 0 or args.border > 1:
-        print("Border must be between 0 and 1")
-        exit()
+    while True:
+        ret, frame = cap.read()
+
+        if not ret:
+            print("Error: Couldn't retrieve frame from camera")
+            break
+
+        # Attach border to the whole video frame for later cropping
+        border_pixels = int(min(frame.shape[0], frame.shape[1]) * args.border)
+        frame_with_border = cv.copyMakeBorder(frame, border_pixels, border_pixels, border_pixels, border_pixels, cv.BORDER_REFLECT)
+
+        # Show the frame
+        cv.imshow('Live Face Recognition', frame)
+
+        if cv.waitKey(1) & 0xFF == ord('q'): # q fpr exit
+            break
+
+    # Release the camera and close all OpenCV windows
+    cap.release()
+    cv.destroyAllWindows()
+
+if __name__ == "__main__":
+    args = None  # You need to define the args or parse command line arguments here
+    live(args)
