@@ -56,12 +56,12 @@ def crop(args):
             os.makedirs(person_train_folder, exist_ok=True)
             os.makedirs(person_val_folder, exist_ok=True)
 
-            for image_file in image_files:
+            for image in image_files:
                 # Dateipfad zum aktuellen Bild
-                image_path = os.path.join(person_folder, image_file)
+                image_path = os.path.join(person_folder, image)
 
                 # CSV-Dateipfad zum aktuellen Bild
-                csv_file_path = os.path.join(person_folder, f"{os.path.splitext(image_file)[0]}.csv")
+                csv_file_path = os.path.join(person_folder, f"{os.path.splitext(image)[0]}.csv")
 
                 # Sicherstellen, dass die CSV-Datei existiert
                 if not os.path.exists(csv_file_path):
@@ -101,7 +101,7 @@ def crop(args):
                         h = int(my + (bwy * 2))
 
                         # Gesicht ausschneiden
-                        face = imgwb[y:h, x:w]
+                        face = imgwb[  y : y+h, x : x+w]
 
                         # Hier die Logik für das Hinzufügen des Randes implementieren
                         # border_pixels = int(min(face.shape[0], face.shape[1]) * args.border)
@@ -118,9 +118,9 @@ def crop(args):
                             os.makedirs(save_folder)
 
                         # Bild speichern
-                        cv.imwrite(os.path.join(save_folder, image_file), face)
+                        cv.imwrite(os.path.join(save_folder, image), face)
 
-                        print(f"Face cropped from {image_file} and saved to {save_folder}")
+                        print(f"Face cropped from {image} and saved to {save_folder}")
                     
     if args.border is None:
         print("Cropping mode requires a border value to be set")
