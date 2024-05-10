@@ -15,8 +15,8 @@ parser = argparse.ArgumentParser(
 
 parser.add_argument("mode", choices=["record", "crop", "train", "live"])
 parser.add_argument("-f", "--folder")
-parser.add_argument("-b", "--border", action="store", default=0.1)
-parser.add_argument("-s", "--split", action="store", default=0.2)
+parser.add_argument("-b", "--border", action="store",type=float, default=0.1)
+parser.add_argument("-s", "--split", action="store",type=float, default=0.2)
 parser.add_argument("-e", "--epochs", action="store", default=30)
 
 # Parse the arguments from the command line
