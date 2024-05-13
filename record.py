@@ -30,7 +30,7 @@ from common import ROOT_FOLDER
     #    exit()
 
 
-def record(folder):
+def record(args):
     # Pfad zur XML-Datei relativ zum Skriptverzeichnis
     xml_file_path = 'haarcascade_frontalface_default.xml'
 
@@ -56,7 +56,7 @@ def record(folder):
         os.mkdir(objects_folder)
 
     #folder = "test"
-    person_folder = os.path.join(objects_folder, folder)
+    person_folder = os.path.join(objects_folder, args.folder)
     if not os.path.exists(person_folder):
         os.mkdir(person_folder)
 
@@ -118,6 +118,3 @@ def record(folder):
     # Release video capture and close all windows
     cap.release()
     cv.destroyAllWindows()
-
-
-
