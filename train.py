@@ -27,8 +27,8 @@ def train(args):
     nClasses = len(trainset.classes)
 
     # Create data loader
-    trainloader = DataLoader(trainset, batch_size=BATCH_SIZE, shuffle=True)
-    validationloader = DataLoader(validationset, batch_size=BATCH_SIZE, shuffle=True)
+    trainloader = DataLoader(trainset, batch_size=BATCH_SIZE, shuffle=True, drop_last=True)
+    validationloader = DataLoader(validationset, batch_size=BATCH_SIZE, shuffle=True, drop_last=True)
 
     # Create the network, the optimizer and the loss function
     net = Net(nClasses)

@@ -37,63 +37,71 @@ def create_folders():
 
 # Funktion zum Ausschneiden der Gesichter
 def crop(args):
-    # Sicherstellen, dass die Ordner existieren und leer sind
+    """Process images by cropping faces and splitting into training and validation sets."""
+    if args.border is None or not (0 <= float(args.border) <= 1):
+        print("Cropping mode requires a border value between 0 and 1.")
+        return
+    
+    # Convert border to float if passed as a string
+    border_percentage = float(args.border)
+
+    # Clean and prepare the output folders
     clean_folder(TRAIN_FOLDER)
     clean_folder(VAL_FOLDER)
     create_folders()
 
-    # Ordner von Personen durchsuchen
-    for root, dirs, files in os.walk(ROOT_FOLDER):
-        for folder_name in dirs:
-            person_folder = os.path.join(root, folder_name)
-
-            # Liste der Bilddateien im aktuellen Ordner erhalten
-            image_files = [file for file in os.listdir(person_folder) if file.endswith('.png')]
-
-            # Erstellen von Unterordnern für die Person in den Trainings- und Validierungsordnern
-            person_train_folder = os.path.join(TRAIN_FOLDER, folder_name)
-            person_val_folder = os.path.join(VAL_FOLDER, folder_name)
+    # Process each person's folder in the root directory
+    for person_folder in os.listdir(ROOT_FOLDER):
+        person_folder_path = os.path.join(ROOT_FOLDER, person_folder)
+        if os.path.isdir(person_folder_path):
+            person_train_folder = os.path.join(TRAIN_FOLDER, person_folder)
+            person_val_folder = os.path.join(VAL_FOLDER, person_folder)
             os.makedirs(person_train_folder, exist_ok=True)
             os.makedirs(person_val_folder, exist_ok=True)
 
-            for image_file in image_files:
-                # Dateipfad zum aktuellen Bild
-                image_path = os.path.join(person_folder, image_file)
+            # Iterate over all image files in the person's folder
+            for image_file in os.listdir(person_folder_path):
+                if image_file.endswith('.png'):
+                    image_path = os.path.join(person_folder_path, image_file)
+                    csv_file_path = os.path.join(person_folder_path, f"{os.path.splitext(image_file)[0]}.csv")
 
-                # CSV-Dateipfad zum aktuellen Bild
-                csv_file_path = os.path.join(person_folder, f"{os.path.splitext(image_file)[0]}.csv")
+                    if not os.path.exists(csv_file_path):
+                        continue
 
-                # Sicherstellen, dass die CSV-Datei existiert
-                if not os.path.exists(csv_file_path):
-                    continue
+                    frame = cv.imread(image_path)
+                    if frame is None:
+                        continue
 
-                # Lesen des Bildes
-                frame = cv.imread(image_path)
+                    with open(csv_file_path, 'r') as csv_file:
+                        csv_reader = csv.reader(csv_file)
+                        for row in csv_reader:
+                            x, y, w, h = map(int, row)
+                            
+                            # Calculate the number of pixels to add as border
+                            border_pixels = int(border_percentage * min(w, h))
 
-                # Lesen der CSV-Datei und Extrahieren der Gesichtskoordinaten
-                with open(csv_file_path, 'r') as csv_file:
-                    csv_reader = csv.reader(csv_file)
-                    for row in csv_reader:
-                        # Gesichtskoordinaten extrahieren (Annahme: x, y, width, height)
-                        x, y, w, h = map(int, row)
+                            # Extend the frame with border to avoid out-of-bound errors when cropping
+                            extended_frame = cv.copyMakeBorder(
+                                frame, 
+                                border_pixels, border_pixels, border_pixels, border_pixels, 
+                                cv.BORDER_REFLECT
+                            )
 
-                        # Gesicht ausschneiden
-                        face = frame[y:y+h, x:x+w]
+                            # Adjust coordinates due to the added border
+                            x += border_pixels
+                            y += border_pixels
 
-                        # Hier die Logik für das Hinzufügen des Randes implementieren
-                        border_pixels = int(min(face.shape[0], face.shape[1]) * args.border)
-                        face_with_border = cv.copyMakeBorder(face, border_pixels, border_pixels, border_pixels, border_pixels, cv.BORDER_REFLECT)
+                            # Crop the face with the border
+                            face_with_border = extended_frame[
+                                y - border_pixels : y + h + border_pixels,
+                                x - border_pixels : x + w + border_pixels
+                            ]
 
-                        # Entscheiden, ob das Bild dem Trainings- oder Validierungsordner zugewiesen wird
-                        if random.uniform(0.0, 1.0) < args.split:
-                            save_folder = person_val_folder
-                        else:
-                            save_folder = person_train_folder
+                            # Decide whether to save to training or validation folder
+                            save_folder = person_val_folder if random.uniform(0.0, 1.0) < args.split else person_train_folder
+                            cv.imwrite(os.path.join(save_folder, image_file), face_with_border)
 
-                        # Bild speichern
-                        cv.imwrite(os.path.join(save_folder, image_file), face_with_border)
-
-                        print(f"Face cropped from {image_file} and saved to {save_folder}")
+                            print(f"Face cropped from {image_file} and saved to {save_folder}")
                     
     if args.border is None:
         print("Cropping mode requires a border value to be set")

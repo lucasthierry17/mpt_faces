@@ -30,7 +30,7 @@ class Net(nn.Module):
         self.conv2 = nn.Conv2d(in_channels=32, out_channels=64, kernel_size=3, padding=1)
         self.conv3 = nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, padding=1)
         self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
-        self.fc1 = nn.Linear(128 * 64 * 64, 512)
+        self.fc1 = nn.Linear(128 * 32 * 32, 512)
         self.fc2 = nn.Linear(512, nClasses)
         self.relu = nn.ReLU()
 
@@ -42,6 +42,7 @@ class Net(nn.Module):
         x = self.relu(self.conv3(x))
         x = self.pool(x)
         x = x.view(x.size(0), -1)
+        x = self.fc1(x)
         x = self.fc2(x)
         return x
 
