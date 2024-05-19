@@ -15,6 +15,9 @@ from transforms import TrainingTransform, ValidationTransform
 BATCH_SIZE = 8
 
 def train(args):
+    
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print("Using device:", device)
     # Setup the ImageFolder Dataset
     trainset = torchvision.datasets.ImageFolder(
         TRAIN_FOLDER, transform=TrainingTransform
@@ -31,7 +34,7 @@ def train(args):
     validationloader = DataLoader(validationset, batch_size=BATCH_SIZE, shuffle=True, drop_last=True)
 
     # Create the network, the optimizer and the loss function
-    net = Net(nClasses)
+    net = Net(nClasses).to(device)
     optim = torch.optim.Adam(net.parameters(), lr=0.0001)
     criterion = torch.nn.CrossEntropyLoss()
 
@@ -54,6 +57,7 @@ def train(args):
 
             bar = tqdm(loader)
             for batch, labels in bar:
+                batch, labels = batch.to(device), labels.to(device)
                 optim.zero_grad()
 
                 out = net(batch)

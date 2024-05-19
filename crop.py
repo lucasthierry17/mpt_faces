@@ -61,7 +61,7 @@ def crop(args):
 
             # Iterate over all image files in the person's folder
             for image_file in os.listdir(person_folder_path):
-                if image_file.endswith('.png'):
+                if image_file.endswith(('.png', '.jpg', '.jpeg')):
                     image_path = os.path.join(person_folder_path, image_file)
                     csv_file_path = os.path.join(person_folder_path, f"{os.path.splitext(image_file)[0]}.csv")
 
