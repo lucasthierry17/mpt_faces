@@ -59,19 +59,21 @@ def train(args):
             for batch, labels in bar:
                 batch, labels = batch.to(device), labels.to(device)
                 optim.zero_grad()
+                
+                with torch.set_grad_enabled(training):
+                    out = net(batch)
+                    #assert(out.shape[0] == BATCH_SIZE)
+                    assert(out.shape[1] == nClasses)
 
-                out = net(batch)
-                assert(out.shape[0] == BATCH_SIZE)
-                assert(out.shape[1] == nClasses)
+                    bacc.update(out, labels)
 
-                bacc.update(out, labels)
+                    loss = criterion(out, labels)
+                    total_loss += loss.item()
+                    total_cnt += batch.shape[0]
 
-                loss = criterion(out, labels)
-                total_loss += loss.item()
-                total_cnt += batch.shape[0]
-
-                loss.backward()
-                optim.step()
+                    if training:
+                        loss.backward()
+                        optim.step()
 
                 bar.set_description(
                     f"{label}   {epoch+1:3}/{int(args.epochs)}   loss={100.0 * total_loss / total_cnt:10.5f}    bacc={100.0 * bacc.getBACC():.2f}%"
