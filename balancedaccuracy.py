@@ -1,7 +1,7 @@
 import torch
 
 # NOTE: This will be the calculation of balanced accuracy for your classification task
-# The balanced accuracy is defined as the average accuracy for each class. 
+# The balanced accuracy is defined as the average accuracy for each class.
 # The accuracy for an indiviual class is the ratio between correctly classified example to all examples of that class.
 # The code in train.py will instantiate one instance of this class.
 # It will call the reset method at the beginning of each epoch. Use this to reset your
@@ -40,23 +40,26 @@ class BalancedAccuracy:
         pass
     """
 
+
 class BalancedAccuracy:
     def __init__(self, nClasses):
         self.nClasses = nClasses
-        self.correct_predictions = [0] * nClasses # list for the correct predictions
-        self.total_examples = [0] * nClasses # total number of examples
+        self.correct_predictions = [0] * nClasses  # list for the correct predictions
+        self.total_examples = [0] * nClasses  # total number of examples
 
-    def reset(self): # resets the internal state of the class
+    def reset(self):  # resets the internal state of the class
         self.correct_predictions = [0] * self.nClasses
         self.total_examples = [0] * self.nClasses
 
-    def update(self, predictions, groundtruth): 
-        # calculates the predicted class for each example 
+    def update(self, predictions, groundtruth):
+        # calculates the predicted class for each example
         predicted_classes = torch.argmax(predictions, dim=1)
         for pred, gt in zip(predicted_classes, groundtruth):
-            if pred == gt: # updates the correct_predictions if the prediction matches the ground truth 
+            if (
+                pred == gt
+            ):  # updates the correct_predictions if the prediction matches the ground truth
                 self.correct_predictions[gt] += 1
-            self.total_examples[gt] += 1 # updates total_examples
+            self.total_examples[gt] += 1  # updates total_examples
 
     def getBACC(self):
         # calculates indovidual accuracies for each class (correct predictions / total number of examples)
@@ -65,6 +68,8 @@ class BalancedAccuracy:
             if self.total_examples[i] == 0:
                 individual_accuracies.append(0)
             else:
-                individual_accuracies.append(self.correct_predictions[i] / self.total_examples[i])
+                individual_accuracies.append(
+                    self.correct_predictions[i] / self.total_examples[i]
+                )
         balanced_accuracy = sum(individual_accuracies) / self.nClasses
         return balanced_accuracy

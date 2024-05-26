@@ -15,12 +15,16 @@ plt.imshow(frame)
 cap.release()
 
 # Pfad zur XML-Datei relativ zum Skriptverzeichnis
-xml_file_path = 'haarcascade_frontalface_default.xml'
+xml_file_path = "haarcascade_frontalface_default.xml"
 
 # Überprüfen, ob die XML-Datei bereits vorhanden ist
 if not os.path.exists(xml_file_path):
     # Wenn die Datei nicht vorhanden ist, laden Sie sie von Google Drive herunter
-    gdown.download('https://drive.google.com/uc?id=1N5j5ke98qCt_0J70wg6F8diHrF5qqxeX&export=download', xml_file_path, quiet=False)
+    gdown.download(
+        "https://drive.google.com/uc?id=1N5j5ke98qCt_0J70wg6F8diHrF5qqxeX&export=download",
+        xml_file_path,
+        quiet=False,
+    )
     print("XML file downloaded successfully.")
 else:
     print("XML file already exists.")
@@ -31,10 +35,10 @@ if not cap.isOpened():
     exit()
 
 # Laden der Gesichtserkennungsklassifikatoren
-face_cascade = cv.CascadeClassifier('haarcascade_frontalface_default.xml')
+face_cascade = cv.CascadeClassifier("haarcascade_frontalface_default.xml")
 
 # Create folder to store faces if it doesn't exist
-objects_folder = 'objects'
+objects_folder = "objects"
 if not os.path.exists(objects_folder):
     os.mkdir(objects_folder)
 folder = "test"
@@ -64,11 +68,13 @@ while True:
     faces = face_cascade.detectMultiScale(gray, 1.3, 5)
 
     # Draw rectangle around faces and save images periodically
-    for (x, y, w, h) in faces:
+    for x, y, w, h in faces:
         cv.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
         if save_frame:
             cv.imwrite(os.path.join(person_folder, f"frame_{frame_count}.png"), frame)
-            with open(os.path.join(person_folder, f"frame_{frame_count}.csv"), "w", newline="") as csvfile:
+            with open(
+                os.path.join(person_folder, f"frame_{frame_count}.csv"), "w", newline=""
+            ) as csvfile:
                 writer = csv.writer(csvfile, delimiter=",")
                 writer.writerow([x, y, w, h])
             frame_count += 1
@@ -76,7 +82,7 @@ while True:
                 save_frame = False
 
     # Show frame with faces
-    cv.imshow('frame', frame)
+    cv.imshow("frame", frame)
 
     # Prüfen, ob es Zeit ist, einen Speichervorgang durchzuführen
     current_time = time.time()
@@ -85,7 +91,7 @@ while True:
         last_save_time = current_time
 
     # Check for 'q' key to quit
-    if cv.waitKey(1) == ord('q'):
+    if cv.waitKey(1) == ord("q"):
         break
 
 # Release video capture and close all windows

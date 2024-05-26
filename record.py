@@ -5,7 +5,8 @@ import gdown
 import uuid
 import csv
 from common import ROOT_FOLDER
-#from cascade import create_cascade
+
+# from cascade import create_cascade
 
 # Quellen
 #  - How to open the webcam: https://docs.opencv.org/4.x/dd/d43/tutorial_py_video_display.html
@@ -16,28 +17,32 @@ from common import ROOT_FOLDER
 #  - How to create new folders: https://www.geeksforgeeks.org/python-os-mkdir-method/
 
 # This is the data recording pipeline
-#def record(args):
-    # : Implement the recording stage of your pipeline
-    #   Create missing folders before you store data in them (os.mkdir)
-    #   Open The OpenCV VideoCapture Device to retrieve live images from your webcam (cv.VideoCapture)
-    #   Initialize the Haar feature cascade for face recognition from OpenCV (cv.CascadeClassifier)
-    #   If the cascade file (haarcascade_frontalface_default.xml) is missing, download it from google drive
-    #   Run the cascade on every image to detect possible faces (CascadeClassifier::detectMultiScale)
-    #   If there is exactly one face, write the image and the face position to disk in two seperate files (cv.imwrite, csv.writer)
-    #   If you have just saved, block saving for 30 consecutive frames to make sure you get good variance of images.
-    #if args.folder is None:
-    #    print("Please specify folder for data to be recorded into")
-    #    exit()
+# def record(args):
+# : Implement the recording stage of your pipeline
+#   Create missing folders before you store data in them (os.mkdir)
+#   Open The OpenCV VideoCapture Device to retrieve live images from your webcam (cv.VideoCapture)
+#   Initialize the Haar feature cascade for face recognition from OpenCV (cv.CascadeClassifier)
+#   If the cascade file (haarcascade_frontalface_default.xml) is missing, download it from google drive
+#   Run the cascade on every image to detect possible faces (CascadeClassifier::detectMultiScale)
+#   If there is exactly one face, write the image and the face position to disk in two seperate files (cv.imwrite, csv.writer)
+#   If you have just saved, block saving for 30 consecutive frames to make sure you get good variance of images.
+# if args.folder is None:
+#    print("Please specify folder for data to be recorded into")
+#    exit()
 
 
 def record(args):
     # Pfad zur XML-Datei relativ zum Skriptverzeichnis
-    xml_file_path = 'haarcascade_frontalface_default.xml'
+    xml_file_path = "haarcascade_frontalface_default.xml"
 
     # Überprüfen, ob die XML-Datei bereits vorhanden ist
     if not os.path.exists(xml_file_path):
         # Wenn die Datei nicht vorhanden ist, laden Sie sie von Google Drive herunter
-        gdown.download('https://drive.google.com/uc?id=1N5j5ke98qCt_0J70wg6F8diHrF5qqxeX&export=download', xml_file_path, quiet=False)
+        gdown.download(
+            "https://drive.google.com/uc?id=1N5j5ke98qCt_0J70wg6F8diHrF5qqxeX&export=download",
+            xml_file_path,
+            quiet=False,
+        )
         print("XML file downloaded successfully.")
     else:
         print("XML file already exists.")
@@ -48,14 +53,14 @@ def record(args):
         exit()
 
     # Laden der Gesichtserkennungsklassifikatoren
-    face_cascade = cv.CascadeClassifier('haarcascade_frontalface_default.xml')
+    face_cascade = cv.CascadeClassifier("haarcascade_frontalface_default.xml")
 
     # Create folder to store faces if it doesn't exist
-    objects_folder = 'objects'
+    objects_folder = "objects"
     if not os.path.exists(objects_folder):
         os.mkdir(objects_folder)
 
-    #folder = "test"
+    # folder = "test"
     person_folder = os.path.join(objects_folder, args.folder)
     if not os.path.exists(person_folder):
         os.mkdir(person_folder)
@@ -78,14 +83,16 @@ def record(args):
         faces = face_cascade.detectMultiScale(gray, 1.3, 5)
 
         # Draw rectangle around faces and save images
-        for (x, y, w, h) in faces:
+        for x, y, w, h in faces:
             padding = 0.2
             new_w = int(w * (1 + padding))
             new_h = int(h * (1 + padding))
             new_x = max(0, x - int((new_w - w) / 2))
             new_y = max(0, y - int((new_h - h) / 2))
             raw_frame = frame.copy()
-            cv.rectangle(frame, (new_x, new_y), (new_x + new_w, new_y + new_h), (255, 0, 0), 2)
+            cv.rectangle(
+                frame, (new_x, new_y), (new_x + new_w, new_y + new_h), (255, 0, 0), 2
+            )
 
             if save_frame:
                 # Generate UUID for the current frame
@@ -97,7 +104,9 @@ def record(args):
 
                 # Save face position to CSV file with UUID filename
                 csv_filename = f"frame_{frame_uuid}.csv"
-                with open(os.path.join(person_folder, csv_filename), "w", newline="") as csvfile:
+                with open(
+                    os.path.join(person_folder, csv_filename), "w", newline=""
+                ) as csvfile:
                     writer = csv.writer(csvfile, delimiter=",")
                     writer.writerow([x, y, w, h])
 
@@ -109,10 +118,10 @@ def record(args):
             save_frame = True  # Set save_frame to True after 30 frames
 
         # Show frame with faces
-        cv.imshow('frame', frame)
+        cv.imshow("frame", frame)
 
         # Check for 'q' key to quit
-        if cv.waitKey(1) == ord('q'):
+        if cv.waitKey(1) == ord("q"):
             break
 
     # Release video capture and close all windows
