@@ -58,7 +58,7 @@ def crop(args):
             person_val_folder = os.path.join(VAL_FOLDER, person_folder)
             os.makedirs(person_train_folder, exist_ok=True)
             os.makedirs(person_val_folder, exist_ok=True)
-
+            
             # Iterate over all image files in the person's folder
             for image_file in os.listdir(person_folder_path):
                 if image_file.endswith(('.png', '.jpg', '.jpeg')):
@@ -71,10 +71,27 @@ def crop(args):
                     frame = cv.imread(image_path)
                     if frame is None:
                         continue
+                    
+                   
 
                     with open(csv_file_path, 'r') as csv_file:
                         csv_reader = csv.reader(csv_file)
+                        print("Processing CSV file:", csv_file)
                         for row in csv_reader:
+                            
+                            # Skip rows with invalid number of coordinates
+                            if len(row) != 4:
+                                print(f"Skipping invalid row: {row}")
+                                continue
+
+                            # Parse the coordinates and skip rows with non-integer values
+                            try:
+                                coords = list(map(int, row))
+                            except ValueError:
+                                print(f"Skipping row with invalid coordinates: {row}")
+                                continue    
+                            
+                            # Parse the coordinates and skip rows with non-integer values
                             x, y, w, h = map(int, row)
                             
                             # Calculate the number of pixels to add as border
