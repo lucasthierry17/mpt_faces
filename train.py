@@ -14,8 +14,9 @@ from transforms import TrainingTransform, ValidationTransform
 
 BATCH_SIZE = 8
 
+
 def train(args):
-    
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print("Using device:", device)
     # Setup the ImageFolder Dataset
@@ -30,8 +31,12 @@ def train(args):
     nClasses = len(trainset.classes)
 
     # Create data loader
-    trainloader = DataLoader(trainset, batch_size=BATCH_SIZE, shuffle=True, drop_last=True)
-    validationloader = DataLoader(validationset, batch_size=BATCH_SIZE, shuffle=True, drop_last=True)
+    trainloader = DataLoader(
+        trainset, batch_size=BATCH_SIZE, shuffle=True, drop_last=True
+    )
+    validationloader = DataLoader(
+        validationset, batch_size=BATCH_SIZE, shuffle=True, drop_last=True
+    )
 
     # Create the network, the optimizer and the loss function
     net = Net(nClasses).to(device)
@@ -59,11 +64,11 @@ def train(args):
             for batch, labels in bar:
                 batch, labels = batch.to(device), labels.to(device)
                 optim.zero_grad()
-                
+
                 with torch.set_grad_enabled(training):
                     out = net(batch)
-                    #assert(out.shape[0] == BATCH_SIZE)
-                    assert(out.shape[1] == nClasses)
+                    # assert(out.shape[0] == BATCH_SIZE)
+                    assert out.shape[1] == nClasses
 
                     bacc.update(out, labels)
 
