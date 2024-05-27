@@ -14,7 +14,11 @@ from transforms import TrainingTransform, ValidationTransform
 
 BATCH_SIZE = 8
 
+
 def train(args):
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print("Using device:", device)
     # Setup the ImageFolder Dataset
     trainset = torchvision.datasets.ImageFolder(
         TRAIN_FOLDER, transform=TrainingTransform
@@ -27,11 +31,15 @@ def train(args):
     nClasses = len(trainset.classes)
 
     # Create data loader
-    trainloader = DataLoader(trainset, batch_size=BATCH_SIZE, shuffle=True)
-    validationloader = DataLoader(validationset, batch_size=BATCH_SIZE, shuffle=True)
+    trainloader = DataLoader(
+        trainset, batch_size=BATCH_SIZE, shuffle=True, drop_last=True
+    )
+    validationloader = DataLoader(
+        validationset, batch_size=BATCH_SIZE, shuffle=True, drop_last=True
+    )
 
     # Create the network, the optimizer and the loss function
-    net = Net(nClasses)
+    net = Net(nClasses).to(device)
     optim = torch.optim.Adam(net.parameters(), lr=0.0001)
     criterion = torch.nn.CrossEntropyLoss()
 
@@ -54,20 +62,23 @@ def train(args):
 
             bar = tqdm(loader)
             for batch, labels in bar:
+                batch, labels = batch.to(device), labels.to(device)
                 optim.zero_grad()
 
-                out = net(batch)
-                assert(out.shape[0] == BATCH_SIZE)
-                assert(out.shape[1] == nClasses)
+                with torch.set_grad_enabled(training):
+                    out = net(batch)
+                    # assert(out.shape[0] == BATCH_SIZE)
+                    assert out.shape[1] == nClasses
 
-                bacc.update(out, labels)
+                    bacc.update(out, labels)
 
-                loss = criterion(out, labels)
-                total_loss += loss.item()
-                total_cnt += batch.shape[0]
+                    loss = criterion(out, labels)
+                    total_loss += loss.item()
+                    total_cnt += batch.shape[0]
 
-                loss.backward()
-                optim.step()
+                    if training:
+                        loss.backward()
+                        optim.step()
 
                 bar.set_description(
                     f"{label}   {epoch+1:3}/{int(args.epochs)}   loss={100.0 * total_loss / total_cnt:10.5f}    bacc={100.0 * bacc.getBACC():.2f}%"
